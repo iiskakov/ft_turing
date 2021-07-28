@@ -5,6 +5,7 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/data.json "LATEST"]
+                 [org.clojure/tools.cli "1.0.206"]
                  [spec-provider "0.4.14"]]
   :main ^:skip-aot ft-turing.core
   :target-path "target/%s"
