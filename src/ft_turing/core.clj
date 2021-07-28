@@ -1,31 +1,19 @@
 (ns ft-turing.core
   (:gen-class)
   (:require [clojure.data.json :as json])
-  )
-
-(defn -main
-  [& args]
-  (declare transition)
-  (defn load-description []
-    (def parsed (json/read-str (slurp "/Users/iskanderiskakov/code/42/ft_turing/resources/test.json")
-                  :key-fn keyword))
-    )
+  (:require [clojure.spec.alpha :as spec]))
 
   (def idx (atom 0))
   (def tape (atom ["1" "0"]))
+  (declare transition)
 
-  (load-description)
-  (get parsed :transitions)
-  (reset! tape [(get parsed :blank)])
+  (defn load-description []
+    (def machine (json/read-str (slurp "/Userspec/iskanderiskakov/code/42/ft_turing/resourcespec/test.json")
+                  :key-fn keyword)))
 
-  (def sm {:subone [{:read "1" :write "0" :action "RIGHT" :to_state "subtwo"}
-                    {:read "-" :write "2" :action "RIGHT" :to_state "subtwo"}]
-           :subtwo [{:read "0" :write "1" :action "RIGHT" :to_state "subone"}
-                    {:read "-" :write "2" :action "RIGHT" :to_state "subtwo"}]})
-
-
-
-  ;; Write/Read Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write/Read Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (defn insert-start [target addition]
     (apply conj (if (vector? addition) addition [addition]) target))
 
@@ -59,14 +47,13 @@
       (= direction "RIGHT") (write-right symbol))
     (println @tape)
     (flush))
-;; rewrite with if else instead of cond
 
   (defn read-tape []
     (nth @tape @idx))
 
-  (reset! idx 0)
-  ;;can probably start with (transition initial)
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Turing Machine Simulation Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (defn compute [input]
     (some (fn [{:keys [read action to_state write]}]
         (when (= read (read-tape))
@@ -75,7 +62,37 @@
                             input))
 
   (defn transition [state]
-   (compute (get sm (keyword state))))
+   (compute (get machine (keyword state))))
+
+(defn -main
+  [& args]
+
+  ;; TODO validate inside transitions
+  (spec/def :machine/finals (spec/coll-of string?))
+  (spec/def :machine/initial string?)
+  (spec/def :machine/states (spec/coll-of string?))
+  (spec/def :machine/blank string?)
+  (spec/def :machine/alphabet (spec/coll-of string?))
+  (spec/def :machine/transitions (spec/coll-of coll?))
+  (spec/def :machine/name string?)
+  (spec/def
+  :machine/description
+  (spec/keys
+    :req-un
+    [:machine/alphabet
+    :machine/blank
+    :machine/finals
+    :machine/initial
+    :machine/name
+    :machine/states
+    :machine/transitions
+    ]))
+
+  (load-description)
+  (spec/valid? :machine/description machine)
+
+
 
   )
+
 
