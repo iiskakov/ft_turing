@@ -10,8 +10,8 @@
   (declare transition)
 
   (defn load-description [path]
-    (def machine (json/read-str (slurp path)
-                  :key-fn keyword)))
+    (json/read-str (slurp path) :key-fn keyword))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Write/Read Functions
@@ -27,8 +27,8 @@
       (= @idx 0) (swap! tape insert-start symbol)
       :otherwise
         (when true
-          (swap! idx dec)
           (swap! tape assoc @idx symbol)
+          (swap! idx dec)
           )))
 
   (defn write-right [symbol]
@@ -39,16 +39,16 @@
           (swap! idx inc))
       :otherwise
         (when true
-          (swap! idx inc)
           (swap! tape assoc @idx symbol)
+          (swap! idx inc)
           )))
 
   (defn write-tape [direction symbol]
     (cond
       (= direction "LEFT") (write-left symbol)
       (= direction "RIGHT") (write-right symbol))
-    (println @tape)
-    (flush))
+    ;; (println symbol)
+    )
 
   (defn read-tape []
     (nth @tape @idx))
@@ -56,15 +56,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Turing Machine Simulation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defn compute [input]
+  (defn compute [transitions states]
     (some (fn [{:keys [read action to_state write]}]
         (when (= read (read-tape))
           (write-tape action write)
-          (transition to_state)))
-                            input))
+          (transition to_state states)))
+                            transitions))
 
-  (defn transition [state]
-   (compute (get machine (keyword state))))
+  (defn transition [state states]
+    (println @tape)
+    (if (= state "HALT")
+        (System/exit 0)
+        (compute (get states (keyword state)) states)))
 
 
 (def VERSION "0.0.1")
@@ -95,14 +98,16 @@
         :machine/transitions
         ]))
 
-    (println args)
-    (println opts)
     (reset! tape (str/split (nth args 1) #""))
-    (println @tape)
 
-    (load-description (nth args 0))
+    (def machine (load-description (nth args 0)))
     (spec/valid? :machine/description machine)
-    (println machine)
+    ;; (println machine)
+    ;; (println (get machine :transitions))
+    (transition
+     (get machine :initial)
+     (get machine :transitions))
+
     )
 
 (defn -main [& args]
@@ -117,7 +122,8 @@
         (:help options)
         (do
           (println summary)
-          (System/exit 0))
+          (System/exit 0)
+          )
 
         (:version options)
         (do
@@ -127,6 +133,8 @@
         :else
         (main arguments options)))
   ;; TODO validate inside transitions
+
+      (println @tape)
 
 
 
