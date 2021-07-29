@@ -48,10 +48,6 @@
       (swap! tape assoc @idx symbol)
       (swap! idx inc))))
 
-(defn write-tape [direction symbol]
-  (cond
-    (= direction "LEFT") (write-left symbol)
-    (= direction "RIGHT") (write-right symbol)))
 
 (defn read-tape []
   (nth @tape @idx))
@@ -60,22 +56,25 @@
 ;; Turing Machine Simulation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn compute [transitions states]
-  (some (fn [{:keys [read action to_state write]}]
-          (when (= read (read-tape))
-            (println "(" to_state write action ")")
-            (write-tape action write)
-            (if (= to_state "HALT")
-              (System/exit 0)
-              (do
-                (print  @tape " ")
-                (print "(" to_state " ")
-                (print (read-tape) ")")
-                (print " -> ")
-                (compute (get states (keyword to_state)) states)
-              ))))
-        transitions))
+  (defn write-tape [direction symbol]
+    (cond
+      (= direction "LEFT") (write-left symbol)
+      (= direction "RIGHT") (write-right symbol)))
+  (loop [current-transitions transitions]
+    (some (fn [{:keys [read action to_state write]}]
+            (when (= read (nth @tape @idx))
+              (println "(" to_state write action ")")
+              (write-tape action write)
+              (if (= to_state "HALT")
+                (System/exit 0)
+                (do
+                  (print  @tape " ")
+                  (print "(" to_state " ")
+                  (print (nth @tape @idx) ")")
+                  (print " -> ")
+                  (recur (get states (keyword to_state)))))))
+          current-transitions)))
 
-(def VERSION "0.0.1")
 
 (def cli-opts
   [["-v" "--verbose" "Increase verbosity" :default 0 :update-fn inc]
@@ -126,10 +125,7 @@
 
   (def states (get machine :transitions))
   (def initial-state (keyword (get machine :initial)))
-  (trampoline compute (get states initial-state) states)
-
-  (println (get machine :transitions))
-  (println (get (get machine :transitions) (get machine :initial))))
+  (trampoline compute (get states initial-state) states))
 
 (defn -main [& args]
   (let [{:keys [errors options arguments summary]} (cli/parse-opts args cli-opts)]
@@ -139,12 +135,10 @@
         (run! println errors)
         (println summary)
         (System/exit -1)) ;; non-zero exit code if something goes wrong
-
       (:help options)
       (do
         (println summary)
         (System/exit 0))
-
       :else
       (main arguments options)))
   ;; TODO validate inside transitions
