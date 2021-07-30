@@ -20,6 +20,22 @@
         (println (.getMessage e))
         (System/exit -1)))))
 
+(defn print-state [to-state write action opts]
+  (when (= (get opts :verbose) 1)
+          (println "(" to-state write action ")")
+          (print  @tape " ")
+          (print "(" to-state " ")
+          (print (nth @tape @idx) ")")
+          (print " -> ")))
+
+(defn print-initial [machine opts]
+  (when (= (get opts :verbose) 1)
+    (println "**************************************************************")
+    (println (get machine :name))
+    (println "**************************************************************")
+    (pp/pprint machine)
+    (println "**************************************************************")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Write/Read Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -62,32 +78,31 @@
 ;; Turing Machine Simulation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn turing-machine [initial-state states]
+(defn turing-machine [initial-state states opts]
   (letfn
    [(compute [transitions]
       (some (fn [{:keys [read action to_state write]}]
               (when (= read (read-tape))
-                (println "(" to_state write action ")")
+                (print-state to_state write action opts)
                 (write-tape action write)
                 #(transition to_state)))
             transitions))
     (transition [to-state]
       (if (= to-state "HALT")
-        (System/exit 0)
-        (do
-          (print  @tape " ")
-          (print "(" to-state " ")
-          (print (nth @tape @idx) ")")
-          (print " -> ")
-          #(compute (get states (keyword to-state))))))]
+        (println @tape)
+        #(compute (get states (keyword to-state)))))]
 
     (trampoline transition initial-state)))
+
+
+
+
+
 
 (def VERSION "0.0.1")
 
 (def cli-opts
   [["-v" "--verbose" "Increase verbosity" :default 0 :update-fn inc]
-   [nil  "--version" "Print version and exit"]
    ["-h" "--help" "Print this help information"]])
 
 (defn main [args {:keys [] :as opts}]
@@ -126,15 +141,15 @@
       (println "Tape is invalid")
       (System/exit -1)))
 
-  (println "**************************************************************")
-  (println (get machine :name))
-  (println "**************************************************************")
-  (pp/pprint machine)
-  (println "**************************************************************")
+  (print-initial machine opts)
 
   (turing-machine
    (get machine :initial)
-   (get machine :transitions)))
+   (get machine :transitions)
+   opts)
+  ;; (println @tape)
+
+  )
 
 (defn -main [& args]
   (let [{:keys [errors options arguments summary]} (cli/parse-opts args cli-opts)]
@@ -152,4 +167,4 @@
       (main arguments options)))
   ;; TODO validate inside transitions
 
-  (println @tape))
+  )
