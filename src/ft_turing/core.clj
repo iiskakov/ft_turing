@@ -48,6 +48,12 @@
       (swap! tape assoc @idx symbol)
       (swap! idx inc))))
 
+(defn write-tape [direction symbol]
+  (cond
+    (= direction "LEFT") (write-left symbol)
+    (= direction "RIGHT") (write-right symbol))
+    ;; (println symbol)
+  )
 
 (defn read-tape []
   (nth @tape @idx))
@@ -55,26 +61,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Turing Machine Simulation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn compute [transitions states]
-  (defn write-tape [direction symbol]
-    (cond
-      (= direction "LEFT") (write-left symbol)
-      (= direction "RIGHT") (write-right symbol)))
-  (loop [current-transitions transitions]
-    (some (fn [{:keys [read action to_state write]}]
-            (when (= read (nth @tape @idx))
-              (println "(" to_state write action ")")
-              (write-tape action write)
-              (if (= to_state "HALT")
-                (System/exit 0)
-                (do
-                  (print  @tape " ")
-                  (print "(" to_state " ")
-                  (print (nth @tape @idx) ")")
-                  (print " -> ")
-                  (recur (get states (keyword to_state)))))))
-          current-transitions)))
 
+(defn turing-machine [initial-state states]
+  (letfn
+   [(compute [transitions]
+      (some (fn [{:keys [read action to_state write]}]
+              (when (= read (read-tape))
+                (println "(" to_state write action ")")
+                (write-tape action write)
+                #(transition to_state)))
+            transitions))
+    (transition [to-state]
+      (if (= to-state "HALT")
+        (System/exit 0)
+        (do
+          (print  @tape " ")
+          (print "(" to-state " ")
+          (print (nth @tape @idx) ")")
+          (print " -> ")
+          #(compute (get states (keyword to-state))))))]
+
+    (trampoline transition initial-state)))
+
+(def VERSION "0.0.1")
 
 (def cli-opts
   [["-v" "--verbose" "Increase verbosity" :default 0 :update-fn inc]
@@ -123,9 +132,9 @@
   (pp/pprint machine)
   (println "**************************************************************")
 
-  (def states (get machine :transitions))
-  (def initial-state (keyword (get machine :initial)))
-  (trampoline compute (get states initial-state) states))
+  (turing-machine
+   (get machine :initial)
+   (get machine :transitions)))
 
 (defn -main [& args]
   (let [{:keys [errors options arguments summary]} (cli/parse-opts args cli-opts)]
