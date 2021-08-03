@@ -78,7 +78,7 @@
 ;; Turing Machine Simulation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn turing-machine [initial-state states opts]
+(defn turing-machine [initial-state states opts finals]
   (letfn
    [(compute [transitions]
       (some (fn [{:keys [read action to_state write]}]
@@ -88,8 +88,8 @@
                 #(transition to_state)))
             transitions))
     (transition [to-state]
-      (if (= to-state "HALT")
-        (println @tape)
+      (if (contains? finals to-state)
+        (println "DONE")
         #(compute (get states (keyword to-state)))))]
 
     (trampoline transition initial-state)))
@@ -126,6 +126,11 @@
       :machine/states
       :machine/transitions]))
 
+  (when (not (= (count args) 2))
+    (do
+      (println "Wrong number of arguments")
+      (println "-h, --help Print help information")
+      (System/exit -1)))
   (def machine (load-description (nth args 0)))
   (when (not (spec/valid? :machine/description machine))
     (do
@@ -146,7 +151,8 @@
   (turing-machine
    (get machine :initial)
    (get machine :transitions)
-   opts)
+   opts
+   (get machine :finals))
   ;; (println @tape)
 
   )
