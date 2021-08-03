@@ -88,7 +88,7 @@
                 #(transition to_state)))
             transitions))
     (transition [to-state]
-      (if (contains? finals to-state)
+      (if (contains? (set finals) to-state)
         (println "DONE")
         #(compute (get states (keyword to-state)))))]
 
