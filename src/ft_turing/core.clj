@@ -153,7 +153,7 @@
    (get machine :transitions)
    opts
    (get machine :finals))
-  ;; (println @tape)
+  (println @tape)
 
   )
 
