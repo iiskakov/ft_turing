@@ -1,0 +1,138 @@
+{
+  "name": "0n1n",
+  "transitions": {
+    "scan-left-1": [
+      {
+        "read": ".",
+        "to_state": "not-0n1n",
+        "write": "n",
+        "action": "RIGHT"
+      },
+      {
+        "read": "1",
+        "to_state": "start",
+        "write": ".",
+        "action": "LEFT"
+      },
+      {
+        "read": "0",
+        "to_state": "not-0n1n",
+        "write": "n",
+        "action": "RIGHT"
+      }
+    ],
+    "scan-left-0": [
+      {
+        "read": ".",
+        "to_state": "not-0n1n",
+        "write": "n",
+        "action": "RIGHT"
+      },
+      {
+        "read": "1",
+        "to_state": "not-0n1n",
+        "write": "n",
+        "action": "RIGHT"
+      },
+      {
+        "read": "0",
+        "to_state": "start",
+        "write": ".",
+        "action": "LEFT"
+      }
+    ],
+    "skip-1": [
+      {
+        "read": ".",
+        "to_state": "scan-left-0",
+        "write": ".",
+        "action": "LEFT"
+      },
+      {
+        "read": "1",
+        "to_state": "skip-1",
+        "write": "1",
+        "action": "RIGHT"
+      },
+      {
+        "read": "0",
+        "to_state": "skip-1",
+        "write": "0",
+        "action": "RIGHT"
+      }
+    ],
+    "skip-0": [
+      {
+        "read": ".",
+        "to_state": "scan-left-1",
+        "write": ".",
+        "action": "LEFT"
+      },
+      {
+        "read": "1",
+        "to_state": "skip-0",
+        "write": "1",
+        "action": "RIGHT"
+      },
+      {
+        "read": "0",
+        "to_state": "skip-0",
+        "write": "0",
+        "action": "RIGHT"
+      }
+    ],
+    "scan-right": [
+      {
+        "read": ".",
+        "to_state": "0n1n",
+        "write": "y",
+        "action": "RIGHT"
+      },
+      {
+        "read": "1",
+        "to_state": "skip-1",
+        "write": ".",
+        "action": "RIGHT"
+      },
+      {
+        "read": "0",
+        "to_state": "skip-0",
+        "write": ".",
+        "action": "RIGHT"
+      }
+    ],
+    "start": [
+      {
+        "read": ".",
+        "to_state": "scan-right",
+        "write": ".",
+        "action": "RIGHT"
+      },
+      {
+        "read": "1",
+        "to_state": "start",
+        "write": "1",
+        "action": "LEFT"
+      },
+      {
+        "read": "0",
+        "to_state": "start",
+        "write": "0",
+        "action": "LEFT"
+      }
+    ]
+  },
+  "blank": ".",
+  "alphabet": ["1", "0", ".", "y", "n"],
+  "initial": "start",
+  "finals": ["0n1n", "not-0n1n"],
+  "states": [
+    "scan-left-1",
+    "scan-left-0",
+    "skip-1",
+    "skip-0",
+    "scan-right",
+    "start",
+    "halt"
+  ]
+}
