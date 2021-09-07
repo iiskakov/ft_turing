@@ -1,0 +1,35 @@
+{
+  "name": "0^2n",
+  "alphabet": ["0", ".", "x"],
+  "blank": ".",
+  "states": ["q1", "q2", "q3", "q4", "q5", "accept", "reject"],
+  "initial": "q1",
+  "finals": ["HALT", "accept", "reject"],
+  "transitions": {
+    "q1": [
+      {"read": "0", "to_state": "q2", "write": ".", "action": "RIGHT"},
+      {"read": ".", "to_state": "reject", "write": "n", "action": "RIGHT"},
+      {"read": "x", "to_state": "reject", "write": "n", "action": "RIGHT"}
+    ],
+    "q2": [
+      {"read": "x", "to_state": "q2", "write": "x", "action": "RIGHT"},
+      {"read": ".", "to_state": "accept", "write": "y", "action": "RIGHT"},
+      {"read": "0", "to_state": "q3", "write": "x", "action": "RIGHT"}
+    ],
+    "q3": [
+      {"read": "x", "to_state": "q3", "write": "x", "action": "RIGHT"},
+      {"read": ".", "to_state": "q5", "write": ".", "action": "LEFT"},
+      {"read": "0", "to_state": "q4", "write": "0", "action": "RIGHT"}
+    ],
+    "q4": [
+      {"read": "x", "to_state": "q4", "write": "x", "action": "RIGHT"},
+      {"read": "0", "to_state": "q3", "write": "x", "action": "RIGHT"},
+      {"read": ".", "to_state": "reject", "write": "n", "action": "RIGHT"}
+    ],
+    "q5": [
+      {"read": "x", "to_state": "q5", "write": "x", "action": "LEFT"},
+      {"read": "0", "to_state": "q5", "write": "0", "action": "LEFT"},
+      {"read": ".", "to_state": "q2", "write": ".", "action": "RIGHT"}
+    ]
+  }
+}
