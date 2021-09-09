@@ -81,12 +81,21 @@
 (defn turing-machine [initial-state states opts finals]
   (letfn
    [(compute [transitions]
+      (or
       (some (fn [{:keys [read action to_state write]}]
               (when (= read (read-tape))
                 (print-state to_state write action opts)
                 (write-tape action write)
                 #(transition to_state)))
-            transitions))
+            transitions)
+      (some (fn [{:keys [read action to_state write]}]
+              (when (= read "ANY")
+                (print-state to_state write action opts)
+                (write-tape action write)
+                #(transition to_state)))
+            transitions)
+      )
+      )
     (transition [to-state]
       (if (contains? (set finals) to-state)
         (println "DONE")
