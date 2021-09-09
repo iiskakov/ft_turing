@@ -72,7 +72,11 @@
   )
 
 (defn read-tape []
-  (nth @tape @idx))
+  ;; (when (not= "ANY" (nth @tape @idx))
+  ;; (do
+  ;;   (println "Tape is" @tape)
+  ;;   (println "symbol is" (nth @tape @idx))))
+  (str (nth @tape @idx)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Turing Machine Simulation Functions
@@ -83,7 +87,9 @@
    [(compute [transitions]
       (or
       (some (fn [{:keys [read action to_state write]}]
-              (when (= read (read-tape))
+              (when (= (str read) (read-tape))
+                (println "just read" (str read) "equals to"  (read-tape))
+                (println "switching to state" to_state)
                 (print-state to_state write action opts)
                 (write-tape action write)
                 #(transition to_state)))
@@ -91,7 +97,11 @@
       (some (fn [{:keys [read action to_state write]}]
               (when (= read "ANY")
                 (print-state to_state write action opts)
-                (write-tape action write)
+                (if (= write "ANY")
+                  (write-tape action (read-tape))
+                  (write-tape action write)
+                  )
+                (write-tape action (read-tape))
                 #(transition to_state)))
             transitions)
       )
