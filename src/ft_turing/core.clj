@@ -23,9 +23,9 @@
 (defn print-state [to-state write action opts]
   (when (= (get opts :verbose) 1)
           (println "(" to-state write action ")")
-          (print  @tape " ")
+          (print  (str/join @tape) )
           (print "(" to-state " ")
-          (print (nth @tape @idx) ")")
+          (print (str (nth @tape @idx)) ")")
           (print " -> ")))
 
 (defn print-initial [machine opts]
@@ -68,14 +68,9 @@
   (cond
     (= direction "LEFT") (write-left symbol)
     (= direction "RIGHT") (write-right symbol))
-    ;; (println symbol)
   )
 
 (defn read-tape []
-  ;; (when (not= "ANY" (nth @tape @idx))
-  ;; (do
-  ;;   (println "Tape is" @tape)
-  ;;   (println "symbol is" (nth @tape @idx))))
   (str (nth @tape @idx)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -88,8 +83,6 @@
       (or
       (some (fn [{:keys [read action to_state write]}]
               (when (= (str read) (read-tape))
-                (println "just read" (str read) "equals to"  (read-tape))
-                (println "switching to state" to_state)
                 (print-state to_state write action opts)
                 (write-tape action write)
                 #(transition to_state)))
@@ -101,7 +94,6 @@
                   (write-tape action (read-tape))
                   (write-tape action write)
                   )
-                (write-tape action (read-tape))
                 #(transition to_state)))
             transitions)
       )
